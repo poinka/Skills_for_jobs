@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habr Career Tech Job Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js" onerror="console.error('Failed to load D3.js from CDN');"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fff1f8 0%, #ffffff 100%);
+            color: #2d3748;
+            margin: 0;
+        }
+        .navbar {
+            background: #f9a8d4;
+            padding: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+            font-weight: 500;
+            font-size: 1rem;
+            margin-right: 20px;
+        }
+        .nav-link:hover {
+            color: #fef2f2 !important;
+        }
+        .container {
+            max-width: 1200px;
+            padding: 20px;
+        }
+        h1 {
+            color: #f450c5;
+            font-size: 2rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #ff68d4;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0 20px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        .chart-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+        }
+        .chart-container:nth-child(1) { animation-delay: 0.1s; }
+        .chart-container:nth-child(2) { animation-delay: 0.2s; }
+        .chart-container:nth-child(3) { animation-delay: 0.3s; }
+        .chart-container:nth-child(4) { animation-delay: 0.4s; }
+        .chart-container:nth-child(5) { animation-delay: 0.5s; }
+        .chart-container:nth-child(6) { animation-delay: 0.6s; }
+        .chart-container:nth-child(7) { animation-delay: 0.7s; }
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            color: #f3b7d2;
+            margin-bottom: 10px;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            pointer-events: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        footer {
+            background: #f9a8d4;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .bar, .arc path {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .bar:hover, .arc path:hover {
+            transform: scale(1.03);
+            opacity: 0.9;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.3rem; }
+            .chart-container { padding: 10px; }
+            .chart-title { font-size: 1rem; }
+            .navbar-brand, .nav-link { font-size: 0.9rem; margin-right: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Habr Career Dashboard</a>
+            <div class="d-flex">
+                <a class="nav-link" href="#overview">Overview</a>
+                <a class="nav-link" href="#skills">Skills</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" id="overview">
+        <h1>Habr Career Tech Job Dashboard</h1>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <div class="chart-title">Job Categories</div>
+                    <svg id="categories-chart" width="100%" height="300"></svg>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <div class="chart-title">Top 10 Technical Skills</div>
+                    <svg id="skills-chart" width="100%" height="300"></svg>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <div class="chart-title">Experience Levels</div>
+                    <svg id="experience-chart" width="100%" height="300"></svg>
+                </div>
+            </div>
+        </div>
+        <h2 id="skills">Technical Skills by Job Category</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Software Development Skills</div>
+                    <svg id="software-dev-skills-chart" width="100%" height="300"></svg>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Analytics Skills</div>
+                    <svg id="analytics-skills-chart" width="100%" height="300"></svg>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Information Security Skills</div>
+                    <svg id="info-security-skills-chart" width="100%" height="300"></svg>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Artificial Intelligence Skills</div>
+                    <svg id="ai-skills-chart" width="100%" height="300"></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© 2025 Habr Career Tech Job Dashboard. Powered by Flask & D3.js.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS (for navbar utilities) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check if D3 is loaded
+        if (typeof d3 === 'undefined') {
+            console.error('D3.js is not loaded. Please check the CDN or network connection.');
+        } else {
+            console.log('D3.js loaded successfully:', d3.version);
+        }
+
+        // Run script after page load
+        window.onload = function() {
+            // Set up tooltip
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            // Color scales (pinky palette)
+            const color = d3.scaleOrdinal(['#f9a8d4', '#fbcfe8', '#f3e8ff', '#c4b5fd', '#f9a8d4', '#f0abfc', '#e2e8f0']);
+
+            // Function to draw pie chart
+            function drawPieChart(svgId, data, labelKey) {
+                if (!data || data.length === 0) {
+                    console.warn(`No data for ${svgId}`);
+                    return;
+                }
+                const width = 300, height = 300, radius = Math.min(width, height) / 2;
+                const svg = d3.select(svgId)
+                    .attr("viewBox", `0 0 ${width} ${height}`)
+                    .append("g")
+                    .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+                const pie = d3.pie().value(d => d.count);
+                const arc = d3.arc().innerRadius(0).outerRadius(radius - 15);
+                const arcs = svg.selectAll(".arc")
+                    .data(pie(data))
+                    .enter().append("g")
+                    .attr("class", "arc");
+
+                arcs.append("path")
+                    .attr("d", arc)
+                    .attr("fill", d => color(d.data[labelKey]))
+                    .on("mouseover", function(event, d) {
+                        d3.select(this).attr("opacity", 0.85);
+                        tooltip.transition().duration(200).style("opacity", 0.9);
+                        tooltip.html(`${d.data[labelKey]}: ${d.data.count}`)
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this).attr("opacity", 1);
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    });
+            }
+
+            // Function to draw bar chart
+            function drawBarChart(svgId, data, labelKey) {
+                if (!data || data.length === 0) {
+                    console.warn(`No data for ${svgId}`);
+                    return;
+                }
+                const margin = {top: 15, right: 20, bottom: 80, left: 50};
+                const width = 300 - margin.left - margin.right;
+                const height = 300 - margin.top - margin.bottom;
+
+                const svg = d3.select(svgId)
+                    .attr("viewBox", `0 0 300 300`)
+                    .append("g")
+                    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d[labelKey]))
+                    .range([0, width])
+                    .padding(0.15);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.count)])
+                    .range([height, 0]);
+
+                svg.append("g")
+                    .attr("transform", `translate(0, ${height})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.6em")
+                    .attr("dy", ".1em")
+                    .attr("transform", "rotate(-40)")
+                    .style("font-size", "10px");
+
+                svg.append("g")
+                    .call(d3.axisLeft(y))
+                    .selectAll("text")
+                    .style("font-size", "10px");
+
+                svg.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("class", "bar")
+                    .attr("x", d => x(d[labelKey]))
+                    .attr("y", d => y(d.count))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => height - y(d.count))
+                    .attr("fill", color(0))
+                    .on("mouseover", function(event, d) {
+                        d3.select(this).attr("opacity", 0.85);
+                        tooltip.transition().duration(200).style("opacity", 0.9);
+                        tooltip.html(`${d[labelKey]}: ${d.count}`)
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this).attr("opacity", 1);
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    });
+            }
+
+            // Load and draw charts
+            d3.json("/api/categories").then(data => {
+                console.log('Categories data:', data);
+                drawPieChart("#categories-chart", data, "category");
+            }).catch(err => console.error('Error loading categories:', err));
+
+            d3.json("/api/skills").then(data => {
+                console.log('Skills data:', data);
+                drawBarChart("#skills-chart", data, "skill");
+            }).catch(err => console.error('Error loading skills:', err));
+
+            d3.json("/api/experience").then(data => {
+                console.log('Experience data:', data);
+                drawPieChart("#experience-chart", data, "level");
+            }).catch(err => console.error('Error loading experience:', err));
+
+            d3.json("/api/skills_per_category").then(data => {
+                console.log('Skills per category data:', data);
+                drawBarChart("#software-dev-skills-chart", data["Software Development"], "skill");
+                drawBarChart("#analytics-skills-chart", data["Analytics"], "skill");
+                drawBarChart("#info-security-skills-chart", data["Information Security"], "skill");
+                drawBarChart("#ai-skills-chart", data["Artificial Intelligence"], "skill");
+            }).catch(err => console.error('Error loading skills per category:', err));
+        };
+    </script>
+</body>
+</html>
